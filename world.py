@@ -8,7 +8,7 @@ def transitionto(world):
     global currentworld
     currentworld = world(currentworld)
 
-class Opening:
+class World:
     def __init__(self, previous = None):
         pass
     def keydown(self, key):
@@ -18,4 +18,12 @@ class Opening:
     def draw(self):
         pass
     def step(self, dt):
+        pass
+
+class Opening(World):
+    def __init__(self, previous = None):
+        pass
+
+class Game(World):
+    def __init__(self, previous = None):
         pass
