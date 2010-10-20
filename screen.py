@@ -22,7 +22,7 @@ def init(size, fullscreen = False):
         glPushMatrix()
         glLoadIdentity()
 
-        glClearColor(1.0, 0.0, 1.0, 1.0)
+        glClearColor(0.0, 0.0, 0.0, 1.0)
         glEnable(GL_DEPTH_TEST)
         glDisable(GL_CULL_FACE)
 

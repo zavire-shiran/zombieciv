@@ -42,6 +42,8 @@ def drawhex(pos, size):
     glVertex(size/2, -size*math.sqrt(3)/2)
     glEnd()
     glPopMatrix()
+    print (size, 0), (size/2, size*math.sqrt(3)/2), (-size/2, size*math.sqrt(3)/2), (-size, 0), (-size/2, -size*math.sqrt(3)/2), (size/2, -size*math.sqrt(3)/2)
+
 
 
 class World:
@@ -65,8 +67,16 @@ class Opening(World):
     def draw(self):
         drawsquare((0,0), (4,3), self.splash)
 
+def drawhexgrid(gridsize, hexsize):
+    for x in xrange(gridsize[0]):
+        for y in xrange(gridsize[1]):
+            if x % 2 == 0:
+                drawhex((x * hexsize * 0.75 + 0.25, y * hexsize * math.sqrt(3)/2), hexsize * 0.98)
+            else:
+                drawhex((x * hexsize * 0.75 + 0.25, y * hexsize * math.sqrt(3)/2 + math.sqrt(3)/4), hexsize * 0.98)
+
 class Game(World):
     def __init__(self, previous = None):
         glDisable(GL_TEXTURE_2D)
     def draw(self):
-        drawhex((1,1), 1)
+        drawhexgrid((6, 4), 1)
