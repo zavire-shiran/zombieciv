@@ -17,7 +17,7 @@ def init(size, fullscreen = False):
 
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        glOrtho(0, ratio*960, 960, 0, -10, 10)
+        glOrtho(0, ratio*3, 3, 0, -10, 10)
         glMatrixMode(GL_MODELVIEW)
         glPushMatrix()
         glLoadIdentity()

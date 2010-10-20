@@ -6,8 +6,8 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL import error
 
-error.ErrorChecker._regiseterdChecker = lambda: 0
-error.ErrorChecker._currentChecker = lambda: 0
+#error.ErrorChecker._regiseterdChecker = lambda: 0
+#error.ErrorChecker._currentChecker = lambda: 0
 
 import pygame
 import math
