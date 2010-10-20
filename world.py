@@ -50,6 +50,8 @@ class World:
         pass
     def keyup(self, key):
         pass
+    def click(self, pos):
+        pass
     def draw(self):
         pass
     def step(self, dt):
@@ -78,8 +80,23 @@ def drawhexgrid(gridsize, hexsize):
         for y in xrange(gridsize[1]):
             drawhex(hexpos((x, y), hexsize), hexsize * 0.98)
 
+#not totally right, has problems on left and right sides of hexagons.
+#try closest center next
+def worldpos2gridpos(pos, hexsize):
+    pos = [x/hexsize for x in pos]
+    pos[0] = (pos[0] - 0.25) / 0.75
+    pos[0] = int(math.floor(pos[0] + 0.5))
+    pos[1] /= math.sqrt(3)/2
+    if pos[0] % 2 == 1:
+        pos[1] += 0.5
+    pos[1] = int(math.floor(pos[1] + 0.5))
+    return pos
+
 class Game(World):
     def __init__(self, previous = None):
         glDisable(GL_TEXTURE_2D)
+        self.hexsize = 0.5
+    def click(self, pos):
+        print worldpos2gridpos(pos, self.hexsize)
     def draw(self):
-        drawhexgrid((12, 8), 0.5)
+        drawhexgrid((12, 8), self.hexsize)

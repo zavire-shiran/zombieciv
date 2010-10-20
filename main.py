@@ -13,7 +13,7 @@ import pygame
 import math
 import texture
 
-from world import getworld, Opening, transitionto
+from world import getworld, Game, transitionto
 
 import screen
 import texture
@@ -24,9 +24,9 @@ mousedown = None
 pygame.init()
 
 size = 1280,960
-screen.init(size)
+worldsize = screen.init(size)
 
-transitionto(Opening)
+transitionto(Game)
 
 lastframe = pygame.time.get_ticks()
 
@@ -40,7 +40,7 @@ while 1:
         elif e.type == pygame.KEYUP:
             getworld().keyup(e.key)
         elif e.type == pygame.MOUSEBUTTONDOWN:
-            pass
+            getworld().click([float(x) * ws / s for x, ws, s in zip(e.pos, worldsize, size)])
     thisframe = pygame.time.get_ticks()
     dt = (thisframe - lastframe)/1000.0
     lastframe = thisframe

@@ -26,7 +26,7 @@ def init(size, fullscreen = False):
         glEnable(GL_DEPTH_TEST)
         glDisable(GL_CULL_FACE)
 
-        return ratio
+        return (ratio*3, 3)
         
 def startframe():
         glLoadIdentity()
