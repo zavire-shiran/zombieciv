@@ -44,6 +44,7 @@ def drawhex(pos, size):
     glEnd()
     glPopMatrix()
 
+#I want it to be centering correctly, and it is not.
 def drawtext(pos, text):
     text = texture.Text(str(text))
     size = (text.horizsize(0.1), 0.1)
@@ -113,7 +114,7 @@ class Game(World):
     def __init__(self, previous = None):
         glDisable(GL_TEXTURE_2D)
         self.hexsize = 0.5
-        self.worldstate = [[0 for y in xrange(8)] for x in xrange(12)]
+        self.worldstate = [[10 for y in xrange(8)] for x in xrange(12)]
     def click(self, pos):
         print worldpos2gridpos(pos, self.hexsize)
     def draw(self):
