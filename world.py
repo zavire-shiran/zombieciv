@@ -91,7 +91,7 @@ def hexpos(pos, hexsize):
                 y * hexsize * math.sqrt(3)/2)
     else:
         return (x * hexsize * 0.75 + 0.25 * hexsize,
-                y * hexsize * math.sqrt(3)/2 + math.sqrt(3)/4 * hexsize)
+                y * hexsize * math.sqrt(3)/2 - math.sqrt(3)/4 * hexsize)
 
 def drawhexgrid(gridsize, hexsize):
     for x in xrange(gridsize[0]):
@@ -110,19 +110,31 @@ def worldpos2gridpos(pos, hexsize):
     pos[1] = int(math.floor(pos[1] + 0.5))
     return pos
 
+def adjacenthexes(pos):
+    ret = [(pos[0]+1, pos[1]),
+           (pos[0]-1, pos[1]),
+           (pos[0],   pos[1]+1),
+           (pos[0],   pos[1]-1)]
+    if pos[0] % 2 == 0:
+        return ret + [(pos[0]-1, pos[1]+1), (pos[0]+1, pos[1]+1)]
+    else:
+        return ret + [(pos[0]+1, pos[1]-1), (pos[0]-1, pos[1]-1)]
+
 class Game(World):
     def __init__(self, previous = None):
         glDisable(GL_TEXTURE_2D)
         self.hexsize = 0.5
-        self.worldstate = [[10 for y in xrange(8)] for x in xrange(12)]
+        self.worldstate = [[1000 for y in xrange(8)] for x in xrange(12)]
+        self.selected = [0,0]
     def click(self, pos):
-        print worldpos2gridpos(pos, self.hexsize)
+        self.selected = worldpos2gridpos(pos, self.hexsize)
+        print self.selected, adjacenthexes(self.selected)
     def draw(self):
         glDisable(GL_TEXTURE_2D)
         glColor(1.0, 1.0, 1.0, 1.0)
         drawhexgrid((12, 8), self.hexsize)
         glColor(0.0, 0.0, 0.0, 1.0)
         glTranslate(0.0, 0.0, 1.0)
-        for x in xrange(12):
-            for y in xrange(8):
-                drawtext(hexpos((x, y), self.hexsize), self.worldstate[x][y])
+        drawtext(hexpos(self.selected, self.hexsize), self.worldstate[self.selected[0]][self.selected[1]])
+        for (x, y) in adjacenthexes(self.selected):
+            drawtext(hexpos((x, y), self.hexsize), self.worldstate[x][y])
