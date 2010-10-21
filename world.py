@@ -88,10 +88,10 @@ def hexpos(pos, hexsize):
     x, y = pos
     if x % 2 == 0:
         return (x * hexsize * 0.75 + 0.25 * hexsize,
-                y * hexsize * math.sqrt(3)/2)
+                y * hexsize * math.sqrt(3)/2 + math.sqrt(3)/4 * hexsize)
     else:
         return (x * hexsize * 0.75 + 0.25 * hexsize,
-                y * hexsize * math.sqrt(3)/2 - math.sqrt(3)/4 * hexsize)
+                y * hexsize * math.sqrt(3)/2)
 
 def drawhexgrid(gridsize, hexsize):
     for x in xrange(gridsize[0]):
@@ -105,8 +105,8 @@ def worldpos2gridpos(pos, hexsize):
     pos[0] = (pos[0] - 0.25) / 0.75
     pos[0] = int(math.floor(pos[0] + 0.5))
     pos[1] /= math.sqrt(3)/2
-    if pos[0] % 2 == 1:
-        pos[1] += 0.5
+    if pos[0] % 2 == 0:
+        pos[1] -= 0.5
     pos[1] = int(math.floor(pos[1] + 0.5))
     return pos
 
@@ -128,7 +128,6 @@ class Game(World):
         self.selected = [0,0]
     def click(self, pos):
         self.selected = worldpos2gridpos(pos, self.hexsize)
-        print self.selected, adjacenthexes(self.selected)
     def draw(self):
         glDisable(GL_TEXTURE_2D)
         glColor(1.0, 1.0, 1.0, 1.0)
