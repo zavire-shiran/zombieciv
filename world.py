@@ -1,6 +1,7 @@
+import math
 import media
 import pygame
-import math
+import texture
 from OpenGL.GL import *
 
 currentworld = None
@@ -42,6 +43,22 @@ def drawhex(pos, size):
     glVertex(size/2, -size*math.sqrt(3)/2)
     glEnd()
     glPopMatrix()
+
+def drawtext(pos, text):
+    text = texture.Text(str(text))
+    size = (text.horizsize(0.1), 0.1)
+    orig = (pos[0] - size[0]/2.0, pos[1] - size[1]/2.0)
+    text()
+    glBegin(GL_QUADS)
+    glTexCoord(0.0, 0.0)
+    glVertex(orig[0], orig[1])
+    glTexCoord(1.0, 0.0)
+    glVertex(orig[0] + size[0], orig[1])
+    glTexCoord(1.0, 1.0)
+    glVertex(orig[0] + size[0], orig[1] + size[1])
+    glTexCoord(0.0, 1.0)
+    glVertex(orig[0], orig[1] + size[1])
+    glEnd()
 
 class World:
     def __init__(self, previous = None):
@@ -96,7 +113,15 @@ class Game(World):
     def __init__(self, previous = None):
         glDisable(GL_TEXTURE_2D)
         self.hexsize = 0.5
+        self.worldstate = [[0 for y in xrange(8)] for x in xrange(12)]
     def click(self, pos):
         print worldpos2gridpos(pos, self.hexsize)
     def draw(self):
+        glDisable(GL_TEXTURE_2D)
+        glColor(1.0, 1.0, 1.0, 1.0)
         drawhexgrid((12, 8), self.hexsize)
+        glColor(0.0, 0.0, 0.0, 1.0)
+        glTranslate(0.0, 0.0, 1.0)
+        for x in xrange(12):
+            for y in xrange(8):
+                drawtext(hexpos((x, y), self.hexsize), self.worldstate[x][y])

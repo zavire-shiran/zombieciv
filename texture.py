@@ -37,8 +37,8 @@ class Texture:
         glBindTexture(GL_TEXTURE_2D, self.textnum)
 
 class Text:
-    def __init__(self, text, font, size = 20):
-        font = pygame.font.Font(font, int(size + 0.5))
+    def __init__(self, text, size = 20):
+        font = pygame.font.Font('Arial.ttf', int(size + 0.5))
         surf = font.render(text, True, (255, 255, 255))
         origwidth, origheight = surf.get_size()
         surf = sizeof2ify(surf)
