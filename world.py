@@ -127,9 +127,15 @@ class Game(World):
         self.size = (12, 8)
         self.worldstate = initworldstate(self.size)
         self.selected = [0,0]
+        self.pause = False
     def click(self, pos):
         self.selected = worldpos2gridpos(pos, self.hexsize)
+    def keydown(self, key):
+        if key == pygame.K_SPACE:
+            self.pause = not self.pause
     def step(self, dt):
+        if self.pause:
+            return
         for x in xrange(self.size[0]):
             for y in xrange(self.size[1]):
                 tile = self.worldstate[x][y]
@@ -162,6 +168,6 @@ class Game(World):
             for y in xrange(8):
                 hpos = hexpos((x, y), self.hexsize)
                 glColor(0.0, 0.0, 0.0, 1.0)
-                drawtext((hpos[0], hpos[1]-self.hexsize*0.25), int(self.worldstate[x][y]['hpop']))
+                drawtext((hpos[0], hpos[1]-self.hexsize*0.2), int(self.worldstate[x][y]['hpop']))
                 glColor(0.1, 0.3, 0.1, 1.0)
-                drawtext((hpos[0], hpos[1]+self.hexsize*0.25), int(self.worldstate[x][y]['food']))
+                drawtext((hpos[0], hpos[1]+self.hexsize*0.2), int(self.worldstate[x][y]['food']))
