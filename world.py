@@ -53,11 +53,11 @@ def drawtext(pos, text):
     glBegin(GL_QUADS)
     glTexCoord(0.0, 0.0)
     glVertex(orig[0], orig[1])
-    glTexCoord(1.0, 0.0)
+    glTexCoord(text.bounds[0], 0.0)
     glVertex(orig[0] + size[0], orig[1])
-    glTexCoord(1.0, 1.0)
+    glTexCoord(text.bounds[0], text.bounds[1])
     glVertex(orig[0] + size[0], orig[1] + size[1])
-    glTexCoord(0.0, 1.0)
+    glTexCoord(0.0, text.bounds[1])
     glVertex(orig[0], orig[1] + size[1])
     glEnd()
 
@@ -93,11 +93,6 @@ def hexpos(pos, hexsize):
         return (x * hexsize * 0.75 + 0.25 * hexsize,
                 y * hexsize * math.sqrt(3)/2)
 
-def drawhexgrid(gridsize, hexsize):
-    for x in xrange(gridsize[0]):
-        for y in xrange(gridsize[1]):
-            drawhex(hexpos((x, y), hexsize), hexsize * 0.98)
-
 #not totally right, has problems on left and right sides of hexagons.
 #try closest center next
 def worldpos2gridpos(pos, hexsize):
@@ -120,20 +115,53 @@ def adjacenthexes(pos):
     else:
         return ret + [(pos[0]+1, pos[1]-1), (pos[0]-1, pos[1]-1)]
 
+def initworldstate(size):
+    ret = [[{'hpop':0, 'food':1000} for y in xrange(8)] for x in xrange(12)]
+    ret[3][3]['hpop'] = 20
+    return ret
+
 class Game(World):
     def __init__(self, previous = None):
         glDisable(GL_TEXTURE_2D)
         self.hexsize = 0.5
-        self.worldstate = [[1000 for y in xrange(8)] for x in xrange(12)]
+        self.size = (12, 8)
+        self.worldstate = initworldstate(self.size)
         self.selected = [0,0]
     def click(self, pos):
         self.selected = worldpos2gridpos(pos, self.hexsize)
+    def step(self, dt):
+        for x in xrange(self.size[0]):
+            for y in xrange(self.size[1]):
+                tile = self.worldstate[x][y]
+                normpop = tile['hpop'] / tile['food']
+                tile['hpop'] += normpop * (1 - normpop) * dt * tile['food'] / 10
+                tile['hpop'] = max(0, tile['hpop'])
+                tile['food'] -= (tile['hpop'] - 30) * dt
+                tile['food'] = max(0.00001, tile['food'])
+        for x in xrange(self.size[0]):
+            for y in xrange(self.size[1]):
+                for adj in adjacenthexes((x,y)):
+                    if 0 > adj[0] or adj[0] >= 12 or 0 > adj[1] or adj[1] >= 8:
+                        continue
+                    if self.worldstate[x][y]['hpop'] - 100 > self.worldstate[adj[0]][adj[1]]['hpop']:
+                        nummoved = int((self.worldstate[x][y]['hpop'] - self.worldstate[adj[0]][adj[1]]['hpop']) * 0.1)
+                        self.worldstate[x][y]['hpop'] -= nummoved
+                        self.worldstate[adj[0]][adj[1]]['hpop'] += nummoved
     def draw(self):
         glDisable(GL_TEXTURE_2D)
         glColor(1.0, 1.0, 1.0, 1.0)
-        drawhexgrid((12, 8), self.hexsize)
-        glColor(0.0, 0.0, 0.0, 1.0)
+        for x in xrange(self.size[0]):
+            for y in xrange(self.size[1]):
+                if self.selected == [x, y]:
+                    glColor(1.0, 0.0, 0.0, 1.0)
+                else:
+                    glColor(1.0, 1.0, 1.0, 1.0)
+                drawhex(hexpos((x, y), self.hexsize), self.hexsize * 0.98)
         glTranslate(0.0, 0.0, 1.0)
-        drawtext(hexpos(self.selected, self.hexsize), self.worldstate[self.selected[0]][self.selected[1]])
-        for (x, y) in adjacenthexes(self.selected):
-            drawtext(hexpos((x, y), self.hexsize), self.worldstate[x][y])
+        for x in xrange(12):
+            for y in xrange(8):
+                hpos = hexpos((x, y), self.hexsize)
+                glColor(0.0, 0.0, 0.0, 1.0)
+                drawtext((hpos[0], hpos[1]-self.hexsize*0.25), int(self.worldstate[x][y]['hpop']))
+                glColor(0.1, 0.3, 0.1, 1.0)
+                drawtext((hpos[0], hpos[1]+self.hexsize*0.25), int(self.worldstate[x][y]['food']))

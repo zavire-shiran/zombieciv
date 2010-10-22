@@ -44,9 +44,6 @@ while 1:
     thisframe = pygame.time.get_ticks()
     dt = (thisframe - lastframe)/1000.0
     lastframe = thisframe
-    while dt > 0.05:
-        getworld().step(0.05)
-        dt -= 0.05
     getworld().step(dt)
     screen.startframe()
     getworld().draw()
