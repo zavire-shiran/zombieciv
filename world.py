@@ -14,22 +14,6 @@ def transitionto(world):
     global currentworld
     currentworld = world(currentworld)
 
-def drawsquare(pos, size, texture, level=0.0):
-    texture()
-    glPushMatrix()
-    glTranslate(pos[0], pos[1], 0)
-    glBegin(GL_QUADS)
-    glTexCoord(0.0, 0.0)
-    glVertex(0.0, 0.0, level)
-    glTexCoord(0.0, 1.0)
-    glVertex(0.0, size[1], level)
-    glTexCoord(1.0, 1.0)
-    glVertex(size[0], size[1], level)
-    glTexCoord(1.0, 0.0)
-    glVertex(size[0], 0.0, level)
-    glEnd()
-    glPopMatrix()
-
 def drawhex(pos, size):
     size = float(size)/2
     glPushMatrix()
@@ -97,7 +81,7 @@ def hexpos(pos, hexsize):
 #try closest center next
 def worldpos2gridpos(pos, hexsize):
     pos = [x/hexsize for x in pos]
-    pos[0] = (pos[0] - 0.25) / 0.75
+    pos[0] = (pos[0]) / 0.75
     pos[0] = int(math.floor(pos[0] + 0.5))
     pos[1] /= math.sqrt(3)/2
     if pos[0] % 2 == 0:
