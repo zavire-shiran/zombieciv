@@ -142,8 +142,10 @@ class Game(World):
                 normpop = tile['hpop'] / tile['food']
                 tile['hpop'] += normpop * (1 - normpop) * dt * tile['food'] / 10
                 tile['hpop'] = max(0, tile['hpop'])
-                tile['food'] -= (tile['hpop'] - 30) * dt
-                tile['food'] = max(0.00001, tile['food'])
+                tile['food'] -= (tile['hpop']/tile['food']) * dt * 10
+                normfood = tile['food'] / 1000.0
+                tile['food'] += normfood * (1 - normfood) * dt * tile['food'] / 10
+                tile['food'] = max(10.0, tile['food'])
         for x in xrange(self.size[0]):
             for y in xrange(self.size[1]):
                 for adj in adjacenthexes((x,y)):
