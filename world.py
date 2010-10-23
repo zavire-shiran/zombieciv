@@ -87,10 +87,10 @@ class Opening(World):
 def hexpos(pos, hexsize):
     x, y = pos
     if x % 2 == 0:
-        return (x * hexsize * 0.75 + 0.25 * hexsize,
+        return (x * hexsize * 0.75,
                 y * hexsize * math.sqrt(3)/2 + math.sqrt(3)/4 * hexsize)
     else:
-        return (x * hexsize * 0.75 + 0.25 * hexsize,
+        return (x * hexsize * 0.75,
                 y * hexsize * math.sqrt(3)/2)
 
 #not totally right, has problems on left and right sides of hexagons.
@@ -127,15 +127,53 @@ class Game(World):
         self.size = (12, 8)
         self.worldstate = initworldstate(self.size)
         self.selected = [0,0]
-        self.pause = False
+        self.speed = 1
+        self.camera = [0.0, 0.0]
+        self.camcontrols = {'left': False, 'right': False, 'up': False, 'down': False}
     def click(self, pos):
-        self.selected = worldpos2gridpos(pos, self.hexsize)
+        self.selected = worldpos2gridpos((pos[0] - self.camera[0], pos[1] - self.camera[1]), self.hexsize)
     def keydown(self, key):
-        if key == pygame.K_SPACE:
-            self.pause = not self.pause
+        if key == pygame.K_0:
+            self.speed = 0
+        if key == pygame.K_1:
+            self.speed = 1
+        if key == pygame.K_2:
+            self.speed = 2
+        if key == pygame.K_3:
+            self.speed = 4
+        if key == pygame.K_4:
+            self.speed = 8
+        if key == pygame.K_5:
+            self.speed = 16
+        if key == pygame.K_RIGHT:
+            self.camcontrols['right'] = True
+        if key == pygame.K_LEFT:
+            self.camcontrols['left'] = True
+        if key == pygame.K_UP:
+            self.camcontrols['up'] = True
+        if key == pygame.K_DOWN:
+            self.camcontrols['down'] = True
+    def keyup(self, key):
+        if key == pygame.K_RIGHT:
+            self.camcontrols['right'] = False
+        if key == pygame.K_LEFT:
+            self.camcontrols['left'] = False
+        if key == pygame.K_UP:
+            self.camcontrols['up'] = False
+        if key == pygame.K_DOWN:
+            self.camcontrols['down'] = False
     def step(self, dt):
-        if self.pause:
-            return
+        if self.camcontrols['right']:
+            self.camera[0] -= 1 * dt
+        if self.camcontrols['left']:
+            self.camera[0] += 1 * dt
+        if self.camcontrols['up']:
+            self.camera[1] += 1 * dt
+        if self.camcontrols['down']:
+            self.camera[1] -= 1 * dt
+        for i in xrange(self.speed):
+            self.worldstep(dt)
+    def worldstep(self, dt):
         for x in xrange(self.size[0]):
             for y in xrange(self.size[1]):
                 tile = self.worldstate[x][y]
@@ -157,6 +195,7 @@ class Game(World):
                         self.worldstate[adj[0]][adj[1]]['hpop'] += nummoved
     def draw(self):
         glDisable(GL_TEXTURE_2D)
+        glTranslate(self.camera[0], self.camera[1], 0.0)
         glColor(1.0, 1.0, 1.0, 1.0)
         for x in xrange(self.size[0]):
             for y in xrange(self.size[1]):
@@ -173,3 +212,16 @@ class Game(World):
                 drawtext((hpos[0], hpos[1]-self.hexsize*0.2), int(self.worldstate[x][y]['hpop']))
                 glColor(0.1, 0.3, 0.1, 1.0)
                 drawtext((hpos[0], hpos[1]+self.hexsize*0.2), int(self.worldstate[x][y]['food']))
+        glLoadIdentity()
+        glTranslate(0.0, 0.0, 2.0)
+        glDisable(GL_TEXTURE_2D)
+        glColor(0.0, 0.0, 0.0, 1.0)
+        glBegin(GL_QUADS)
+        glVertex(0.0, 2.9, 0.0)
+        glVertex(4.0, 2.9, 0.0)
+        glVertex(4.0, 3.0, 0.0)
+        glVertex(0.0, 3.0, 0.0)
+        glEnd()
+        glTranslate(0.0, 0.0, 1.0)
+        glColor(1.0, 0.0, 0.0, 1.0)
+        drawtext((0.05, 2.95), str(self.speed) + 'x')
