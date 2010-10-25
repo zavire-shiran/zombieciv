@@ -3,6 +3,7 @@ import media
 import pygame
 import texture
 import numpy
+import random
 from OpenGL.GL import *
 from OpenGL.arrays import ArrayDatatype as ADT
 
@@ -135,19 +136,19 @@ def adjacenthexes(pos):
         return ret + [(pos[0]+1, pos[1]-1), (pos[0]-1, pos[1]-1)]
 
 def initworldstate(size):
-    ret = [[{'hpop':0, 'food':1000} for y in xrange(8)] for x in xrange(12)]
-    ret[3][3]['hpop'] = 20
+    ret = [[{'hpop':200, 'food':1000, 'zombie':0} for y in xrange(8)] for x in xrange(12)]
+    ret[5][3]['zombie'] = 10
     return ret
 
 class Game(World):
     def __init__(self, previous = None):
         glDisable(GL_TEXTURE_2D)
-        self.hexsize = 0.5
-        self.size = (12, 8)
+        self.hexsize = 0.46
+        self.size = (11, 7)
         self.worldstate = initworldstate(self.size)
         self.selected = [0,0]
         self.speed = 1
-        self.camera = [0.0, 0.0]
+        self.camera = [0.23, 0.15]
         self.camcontrols = {'left': False, 'right': False, 'up': False, 'down': False}
         self.hexbuffer = buffer(*genhexbuffer(self.size, self.hexsize))
     def click(self, pos):
@@ -197,22 +198,34 @@ class Game(World):
         for x in xrange(self.size[0]):
             for y in xrange(self.size[1]):
                 tile = self.worldstate[x][y]
-                normpop = tile['hpop'] / tile['food']
-                tile['hpop'] += normpop * (1 - normpop) * dt * tile['food'] / 10
-                tile['hpop'] = max(0, tile['hpop'])
-                tile['food'] -= (tile['hpop']/tile['food']) * dt * 10
-                normfood = tile['food'] / 1000.0
-                tile['food'] += normfood * (1 - normfood) * dt * tile['food'] / 10
-                tile['food'] = max(10.0, tile['food'])
+                if not tile['zombie'] > 1:
+                    normpop = tile['hpop'] / tile['food']
+                    tile['hpop'] += normpop * (1 - normpop) * dt * tile['food'] / 10
+                    tile['hpop'] = max(0, tile['hpop'])
+                zombiegrowth = min(tile['hpop'], tile['zombie']) * dt * 0.1
+                tile['hpop'] -= zombiegrowth
+                tile['zombie'] += zombiegrowth
+#                tile['food'] -= (tile['hpop']/tile['food']) * dt * 10
+#                normfood = tile['food'] / 1000.0
+#                tile['food'] += normfood * (1 - normfood) * dt * tile['food'] / 10
+#                tile['food'] = max(10.0, tile['food'])
         for x in xrange(self.size[0]):
             for y in xrange(self.size[1]):
-                for adj in adjacenthexes((x,y)):
+                adjhexes = adjacenthexes((x,y))
+                random.shuffle(adjhexes)
+                for adj in adjhexes:
                     if 0 > adj[0] or adj[0] >= 12 or 0 > adj[1] or adj[1] >= 8:
                         continue
-                    if self.worldstate[x][y]['hpop'] - 100 > self.worldstate[adj[0]][adj[1]]['hpop']:
+                    if self.worldstate[x][y]['hpop'] - 100 > self.worldstate[adj[0]][adj[1]]['hpop'] and \
+                       not self.worldstate[adj[0]][adj[1]]['zombie'] > 0:
                         nummoved = int((self.worldstate[x][y]['hpop'] - self.worldstate[adj[0]][adj[1]]['hpop']) * 0.1)
                         self.worldstate[x][y]['hpop'] -= nummoved
                         self.worldstate[adj[0]][adj[1]]['hpop'] += nummoved
+                    if self.worldstate[x][y]['zombie'] > 100 and \
+                       self.worldstate[x][y]['zombie'] * .9 > self.worldstate[adj[0]][adj[1]]['zombie']:
+                        nummoved = 0.1 #self.worldstate[x][y]['zombie'] * 0.1
+                        self.worldstate[x][y]['zombie'] -= nummoved
+                        self.worldstate[adj[0]][adj[1]]['zombie'] += nummoved
     def draw(self):
         glLoadIdentity()
         glDisable(GL_TEXTURE_2D)
@@ -221,13 +234,15 @@ class Game(World):
         self.hexbuffer.draw()
 
         glTranslate(0.0, 0.0, 1.0)
-        for x in xrange(12):
-            for y in xrange(8):
+        for x in xrange(self.size[0]):
+            for y in xrange(self.size[1]):
                 hpos = hexpos((x, y), self.hexsize)
                 glColor(0.0, 0.0, 0.0, 1.0)
                 drawtext((hpos[0], hpos[1]-self.hexsize*0.2), int(self.worldstate[x][y]['hpop']))
-                glColor(0.1, 0.3, 0.1, 1.0)
-                drawtext((hpos[0], hpos[1]+self.hexsize*0.2), int(self.worldstate[x][y]['food']))
+#                glColor(0.1, 0.3, 0.1, 1.0)
+#                drawtext((hpos[0], hpos[1]+self.hexsize*0.2), int(self.worldstate[x][y]['food']))
+                glColor(0.3, 0.1, 0.1, 1.0)
+                drawtext(hpos, int(self.worldstate[x][y]['zombie']))
         glLoadIdentity()
         glTranslate(0.0, 0.0, 2.0)
         glDisable(GL_TEXTURE_2D)
