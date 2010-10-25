@@ -214,7 +214,7 @@ class Game(World):
                 adjhexes = adjacenthexes((x,y))
                 random.shuffle(adjhexes)
                 for adj in adjhexes:
-                    if 0 > adj[0] or adj[0] >= 12 or 0 > adj[1] or adj[1] >= 8:
+                    if 0 > adj[0] or adj[0] >= self.size[0] or 0 > adj[1] or adj[1] >= self.size[1]:
                         continue
                     if self.worldstate[x][y]['hpop'] - 100 > self.worldstate[adj[0]][adj[1]]['hpop'] and \
                        not self.worldstate[adj[0]][adj[1]]['zombie'] > 0:
