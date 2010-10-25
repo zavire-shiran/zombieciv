@@ -2,9 +2,15 @@ import math
 import media
 import pygame
 import texture
+import numpy
 from OpenGL.GL import *
+from OpenGL.arrays import ArrayDatatype as ADT
 
 currentworld = None
+hexbuffer = None
+vertexLoc = None
+texCoord0Loc = None
+normalLoc = None
 
 def getworld():
     global currentworld
@@ -14,21 +20,58 @@ def transitionto(world):
     global currentworld
     currentworld = world(currentworld)
 
-def drawhex(pos, size):
-    size = float(size)/2
-    glPushMatrix()
-    glTranslate(pos[0], pos[1], 0)
-    glBegin(GL_TRIANGLE_FAN)
-    glVertex(size, 0)
-    glVertex(size/2, size*math.sqrt(3)/2)
-    glVertex(-size/2, size*math.sqrt(3)/2)
-    glVertex(-size, 0)
-    glVertex(-size/2, -size*math.sqrt(3)/2)
-    glVertex(size/2, -size*math.sqrt(3)/2)
-    glEnd()
-    glPopMatrix()
+def hexpos(pos, hexsize):
+    x, y = pos
+    if x % 2 == 0:
+        return (x * hexsize * 0.75,
+                y * hexsize * math.sqrt(3)/2 + math.sqrt(3)/4 * hexsize)
+    else:
+        return (x * hexsize * 0.75,
+                y * hexsize * math.sqrt(3)/2)
 
-#I want it to be centering correctly, and it is not.
+def genhexbuffer(size, hexsize):
+    vertbuffer = []
+    indexbuffer = []
+    ni = 0
+    hsize = hexsize * 0.49
+    print hsize
+    for x in xrange(size[0]):
+        for y in xrange(size[1]):
+            pos = hexpos((x, y), hexsize)
+            vertbuffer += [(hsize + pos[0], pos[1], 0),
+                           (hsize/2.0 + pos[0], hsize * math.sqrt(3)/2 + pos[1], 0),
+                           (-hsize/2.0 + pos[0], hsize * math.sqrt(3)/2 + pos[1], 0), 
+                           (-hsize + pos[0], pos[1], 0),
+                           (-hsize/2.0 + pos[0], -hsize * math.sqrt(3)/2 + pos[1], 0),
+                           (hsize/2.0 + pos[0], -hsize * math.sqrt(3)/2 + pos[1], 0)]
+            indexbuffer += [ni, ni+1, ni+2, 
+                            ni, ni+2, ni+3,
+                            ni, ni+3, ni+4,
+                            ni, ni+4, ni+5]
+            ni += 6
+    return vertbuffer, indexbuffer
+
+def convertbuffer(buffer):
+    return numpy.array(buffer, dtype=numpy.float32)
+
+class buffer:
+    def __init__(self, vertbuffer, indexbuffer):
+        self.buffer = glGenBuffers(1)
+        self.indexbuffer = indexbuffer
+        glBindBuffer(GL_ARRAY_BUFFER, self.buffer)
+        self.numverts = len(vertbuffer)
+        vertbuffer = convertbuffer(vertbuffer)
+        glBufferData(GL_ARRAY_BUFFER, ADT.arrayByteCount(vertbuffer), ADT.voidDataPointer(vertbuffer), GL_STATIC_DRAW)
+    def __del__(self):
+        if glDeleteBuffers:
+            glDeleteBuffers(1, [self.buffer])
+    def draw(self):
+        glEnableClientState(GL_VERTEX_ARRAY)
+        glBindBuffer(GL_ARRAY_BUFFER, self.buffer)
+        glVertexPointer(3, GL_FLOAT, 0, None)
+        glDrawElementsui(GL_TRIANGLES, self.indexbuffer)
+        glDisableClientState(GL_VERTEX_ARRAY)
+
 def drawtext(pos, text):
     text = texture.Text(str(text))
     size = (text.horizsize(0.1), 0.1)
@@ -68,14 +111,6 @@ class Opening(World):
     def draw(self):
         drawsquare((0,0), (4,3), self.splash)
 
-def hexpos(pos, hexsize):
-    x, y = pos
-    if x % 2 == 0:
-        return (x * hexsize * 0.75,
-                y * hexsize * math.sqrt(3)/2 + math.sqrt(3)/4 * hexsize)
-    else:
-        return (x * hexsize * 0.75,
-                y * hexsize * math.sqrt(3)/2)
 
 #not totally right, has problems on left and right sides of hexagons.
 #try closest center next
@@ -114,6 +149,7 @@ class Game(World):
         self.speed = 1
         self.camera = [0.0, 0.0]
         self.camcontrols = {'left': False, 'right': False, 'up': False, 'down': False}
+        self.hexbuffer = buffer(*genhexbuffer(self.size, self.hexsize))
     def click(self, pos):
         self.selected = worldpos2gridpos((pos[0] - self.camera[0], pos[1] - self.camera[1]), self.hexsize)
     def keydown(self, key):
@@ -178,16 +214,12 @@ class Game(World):
                         self.worldstate[x][y]['hpop'] -= nummoved
                         self.worldstate[adj[0]][adj[1]]['hpop'] += nummoved
     def draw(self):
+        glLoadIdentity()
         glDisable(GL_TEXTURE_2D)
         glTranslate(self.camera[0], self.camera[1], 0.0)
         glColor(1.0, 1.0, 1.0, 1.0)
-        for x in xrange(self.size[0]):
-            for y in xrange(self.size[1]):
-                if self.selected == [x, y]:
-                    glColor(1.0, 0.0, 0.0, 1.0)
-                else:
-                    glColor(1.0, 1.0, 1.0, 1.0)
-                drawhex(hexpos((x, y), self.hexsize), self.hexsize * 0.98)
+        self.hexbuffer.draw()
+
         glTranslate(0.0, 0.0, 1.0)
         for x in xrange(12):
             for y in xrange(8):
