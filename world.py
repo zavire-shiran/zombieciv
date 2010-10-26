@@ -136,7 +136,7 @@ def adjacenthexes(pos):
         return ret + [(pos[0]+1, pos[1]-1), (pos[0]-1, pos[1]-1)]
 
 def initworldstate(size):
-    ret = [[{'hpop':200, 'food':1000, 'zombie':0} for y in xrange(8)] for x in xrange(12)]
+    ret = [[{'hpop':400*random.random(), 'food':1000, 'zombie':0} for y in xrange(8)] for x in xrange(12)]
     ret[5][3]['zombie'] = 10
     return ret
 
@@ -221,8 +221,7 @@ class Game(World):
                         nummoved = int((self.worldstate[x][y]['hpop'] - self.worldstate[adj[0]][adj[1]]['hpop']) * 0.1)
                         self.worldstate[x][y]['hpop'] -= nummoved
                         self.worldstate[adj[0]][adj[1]]['hpop'] += nummoved
-                    if self.worldstate[x][y]['zombie'] > 100 and \
-                       self.worldstate[x][y]['zombie'] * .9 > self.worldstate[adj[0]][adj[1]]['zombie']:
+                    if self.worldstate[x][y]['zombie'] > self.worldstate[x][y]['hpop']:
                         nummoved = 0.1 #self.worldstate[x][y]['zombie'] * 0.1
                         self.worldstate[x][y]['zombie'] -= nummoved
                         self.worldstate[adj[0]][adj[1]]['zombie'] += nummoved
