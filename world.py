@@ -136,8 +136,21 @@ def adjacenthexes(pos):
         return ret + [(pos[0]+1, pos[1]-1), (pos[0]-1, pos[1]-1)]
 
 def initworldstate(size):
-    ret = [[{'hpop':400*random.random(), 'food':1000, 'zombie':0} for y in xrange(8)] for x in xrange(12)]
+    ret = [[{'hpop':400*random.random(), 'food':1000, 'military': 0, 'zombie':0} 
+            for y in xrange(size[1])] for x in xrange(size[0])]
     ret[5][3]['zombie'] = 10
+    ret[5][1]['military'] = 1000
+    ret[4][1]['military'] = 1000
+    ret[3][2]['military'] = 1000
+    ret[3][3]['military'] = 1000
+    ret[3][4]['military'] = 1000
+    ret[4][4]['military'] = 1000
+    ret[5][5]['military'] = 1000
+    ret[6][1]['military'] = 1000
+    ret[7][2]['military'] = 1000
+    ret[7][3]['military'] = 1000
+    ret[7][4]['military'] = 1000
+    ret[6][4]['military'] = 1000
     return ret
 
 class Game(World):
@@ -238,8 +251,8 @@ class Game(World):
                 hpos = hexpos((x, y), self.hexsize)
                 glColor(0.0, 0.0, 0.0, 1.0)
                 drawtext((hpos[0], hpos[1]-self.hexsize*0.2), int(self.worldstate[x][y]['hpop']))
-#                glColor(0.1, 0.3, 0.1, 1.0)
-#                drawtext((hpos[0], hpos[1]+self.hexsize*0.2), int(self.worldstate[x][y]['food']))
+                glColor(0.1, 0.1, 0.5, 1.0)
+                drawtext((hpos[0], hpos[1]+self.hexsize*0.2), int(self.worldstate[x][y]['military']))
                 glColor(0.3, 0.1, 0.1, 1.0)
                 drawtext(hpos, int(self.worldstate[x][y]['zombie']))
         glLoadIdentity()
