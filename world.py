@@ -89,6 +89,14 @@ def drawtext(pos, text):
     glVertex(orig[0], orig[1] + size[1])
     glEnd()
 
+def drawmoveorder(pos):
+    glColor(0.0, 0.0, 1.0)
+    glBegin(GL_TRIANGLES)
+    glVertex(pos[0],      pos[1]-0.1,  3.0)
+    glVertex(pos[0]+0.07, pos[1]+0.03, 3.0)
+    glVertex(pos[0]+0.07, pos[1]+0.03, 3.0)
+    glEnd()
+
 class World:
     def __init__(self, previous = None):
         pass
@@ -126,31 +134,39 @@ def worldpos2gridpos(pos, hexsize):
     return pos
 
 def adjacenthexes(pos):
-    ret = [(pos[0]+1, pos[1]),
-           (pos[0]-1, pos[1]),
-           (pos[0],   pos[1]+1),
+    ret = [(pos[0],   pos[1]+1),
            (pos[0],   pos[1]-1)]
     if pos[0] % 2 == 0:
-        return ret + [(pos[0]-1, pos[1]+1), (pos[0]+1, pos[1]+1)]
-    else:
-        return ret + [(pos[0]+1, pos[1]-1), (pos[0]-1, pos[1]-1)]
+        ret += [(pos[0]+1, pos[1]+1), (pos[0]-1, pos[1]+1)]
+    ret += [(pos[0]+1, pos[1]),
+            (pos[0]-1, pos[1])]
+    if pos[0] % 2 == 1:
+        ret += [(pos[0]+1, pos[1]-1), (pos[0]-1, pos[1]-1)]
+    return ret
 
 def initworldstate(size):
-    ret = [[{'hpop':400*random.random(), 'food':1000, 'military': 0, 'zombie':0} 
+    ret = [[{'hpop':400*random.random(), 'food':1000, 'military': 0, 'zombie':0,
+             'milorders':[False, False, False, False, False, False]}
             for y in xrange(size[1])] for x in xrange(size[0])]
     ret[5][3]['zombie'] = 10
-    ret[5][1]['military'] = 1000
-    ret[4][1]['military'] = 1000
-    ret[3][2]['military'] = 1000
-    ret[3][3]['military'] = 1000
-    ret[3][4]['military'] = 1000
-    ret[4][4]['military'] = 1000
-    ret[5][5]['military'] = 1000
-    ret[6][1]['military'] = 1000
-    ret[7][2]['military'] = 1000
-    ret[7][3]['military'] = 1000
-    ret[7][4]['military'] = 1000
-    ret[6][4]['military'] = 1000
+#    ret[5][2]['military'] = 1000
+#    ret[5][4]['military'] = 1000
+#    ret[4][2]['military'] = 1000
+#    ret[4][3]['military'] = 1000
+#    ret[6][2]['military'] = 1000
+#    ret[6][3]['military'] = 1000
+#    ret[5][1]['military'] = 1000
+#    ret[4][1]['military'] = 1000
+#    ret[3][2]['military'] = 1000
+#    ret[3][3]['military'] = 1000
+#    ret[3][4]['military'] = 1000
+#    ret[4][4]['military'] = 1000
+#    ret[5][5]['military'] = 1000
+#    ret[6][1]['military'] = 1000
+#    ret[7][2]['military'] = 1000
+#    ret[7][3]['military'] = 1000
+#    ret[7][4]['military'] = 1000
+#    ret[6][4]['military'] = 1000
     return ret
 
 class Game(World):
@@ -174,11 +190,11 @@ class Game(World):
         if key == pygame.K_2:
             self.speed = 2
         if key == pygame.K_3:
-            self.speed = 4
+            self.speed = 5
         if key == pygame.K_4:
-            self.speed = 8
+            self.speed = 10
         if key == pygame.K_5:
-            self.speed = 16
+            self.speed = 20
         if key == pygame.K_RIGHT:
             self.camcontrols['right'] = True
         if key == pygame.K_LEFT:
@@ -187,6 +203,18 @@ class Game(World):
             self.camcontrols['up'] = True
         if key == pygame.K_DOWN:
             self.camcontrols['down'] = True
+        if key == pygame.K_q:
+            self.worldstate[self.selected[0]][self.selected[1]]['milorders'][5] = not self.worldstate[self.selected[0]][self.selected[1]]['milorders'][5]
+        if key == pygame.K_w:
+            self.worldstate[self.selected[0]][self.selected[1]]['milorders'][1] = not self.worldstate[self.selected[0]][self.selected[1]]['milorders'][1]
+        if key == pygame.K_e:
+            self.worldstate[self.selected[0]][self.selected[1]]['milorders'][4] = not self.worldstate[self.selected[0]][self.selected[1]]['milorders'][4]
+        if key == pygame.K_a:
+            self.worldstate[self.selected[0]][self.selected[1]]['milorders'][3] = not self.worldstate[self.selected[0]][self.selected[1]]['milorders'][3]
+        if key == pygame.K_s:
+            self.worldstate[self.selected[0]][self.selected[1]]['milorders'][0] = not self.worldstate[self.selected[0]][self.selected[1]]['milorders'][0]
+        if key == pygame.K_d:
+            self.worldstate[self.selected[0]][self.selected[1]]['milorders'][2] = not self.worldstate[self.selected[0]][self.selected[1]]['milorders'][2]
     def keyup(self, key):
         if key == pygame.K_RIGHT:
             self.camcontrols['right'] = False
@@ -197,14 +225,14 @@ class Game(World):
         if key == pygame.K_DOWN:
             self.camcontrols['down'] = False
     def step(self, dt):
-        if self.camcontrols['right']:
-            self.camera[0] -= 1 * dt
-        if self.camcontrols['left']:
-            self.camera[0] += 1 * dt
-        if self.camcontrols['up']:
-            self.camera[1] += 1 * dt
-        if self.camcontrols['down']:
-            self.camera[1] -= 1 * dt
+#        if self.camcontrols['right']:
+#            self.camera[0] -= 1 * dt
+#        if self.camcontrols['left']:
+#            self.camera[0] += 1 * dt
+#        if self.camcontrols['up']:
+#            self.camera[1] += 1 * dt
+#        if self.camcontrols['down']:
+#            self.camera[1] -= 1 * dt
         for i in xrange(self.speed):
             self.worldstep(dt)
     def worldstep(self, dt):
@@ -215,13 +243,21 @@ class Game(World):
                     normpop = tile['hpop'] / tile['food']
                     tile['hpop'] += normpop * (1 - normpop) * dt * tile['food'] / 10
                     tile['hpop'] = max(0, tile['hpop'])
-                zombiegrowth = min(tile['hpop'], tile['zombie']) * dt * 0.1
-                tile['hpop'] -= zombiegrowth
-                tile['zombie'] += zombiegrowth
-#                tile['food'] -= (tile['hpop']/tile['food']) * dt * 10
-#                normfood = tile['food'] / 1000.0
-#                tile['food'] += normfood * (1 - normfood) * dt * tile['food'] / 10
-#                tile['food'] = max(10.0, tile['food'])
+                normzombies = min(0.95, tile['zombie'] / tile['hpop'])
+                humanskilled = normzombies * (1-normzombies) * tile['hpop'] * dt * 0.1
+                tile['hpop'] -= humanskilled
+                militarykilled = 0.0
+                if tile['military'] > 0.0:
+                    militarykilled = tile['zombie'] / tile['military'] * dt
+                zombieskilled = 0.0
+                if tile['military'] > 1.0:
+                    zombieskilled += math.log(tile['military']) * dt
+                tile['zombie'] += humanskilled - zombieskilled
+                tile['military'] -= militarykilled
+                if tile['military'] < 0.0:
+                    tile['military'] = 0.0
+                if tile['zombie'] < 0.1:
+                    tile['zombie'] = 0.0
         for x in xrange(self.size[0]):
             for y in xrange(self.size[1]):
                 adjhexes = adjacenthexes((x,y))
@@ -234,8 +270,15 @@ class Game(World):
                         nummoved = int((self.worldstate[x][y]['hpop'] - self.worldstate[adj[0]][adj[1]]['hpop']) * 0.1)
                         self.worldstate[x][y]['hpop'] -= nummoved
                         self.worldstate[adj[0]][adj[1]]['hpop'] += nummoved
-                    if self.worldstate[x][y]['zombie'] > self.worldstate[x][y]['hpop']:
-                        nummoved = 0.1 #self.worldstate[x][y]['zombie'] * 0.1
+                    if not self.worldstate[x][y]['military'] and \
+                       self.worldstate[x][y]['zombie'] > self.worldstate[x][y]['hpop']:
+                        nummoved = 0
+                        if self.worldstate[adj[0]][adj[1]]['military'] == 0:
+                            nummoved = (self.worldstate[x][y]['zombie'] - 
+                                        self.worldstate[adj[0]][adj[1]]['zombie']) * dt
+                        elif self.worldstate[x][y]['zombie'] > \
+                             self.worldstate[x][y]['hpop'] + self.worldstate[adj[0]][adj[1]]['military'] * 0.1:
+                            nummoved = self.worldstate[adj[0]][adj[1]]['military'] * 0.1
                         self.worldstate[x][y]['zombie'] -= nummoved
                         self.worldstate[adj[0]][adj[1]]['zombie'] += nummoved
     def draw(self):
@@ -244,6 +287,18 @@ class Game(World):
         glTranslate(self.camera[0], self.camera[1], 0.0)
         glColor(1.0, 1.0, 1.0, 1.0)
         self.hexbuffer.draw()
+
+        selectpos = hexpos(self.selected, self.hexsize)
+        hsize = self.hexsize * 0.48
+        glColor(1.0, 0.0, 0.0, 1.0)
+        glBegin(GL_LINE_LOOP)
+        glVertex(hsize + selectpos[0], selectpos[1], 1)
+        glVertex(hsize/2.0 + selectpos[0], hsize * math.sqrt(3)/2 + selectpos[1], 1)
+        glVertex(-hsize/2.0 + selectpos[0], hsize * math.sqrt(3)/2 + selectpos[1], 1)
+        glVertex(-hsize + selectpos[0], selectpos[1], 1)
+        glVertex(-hsize/2.0 + selectpos[0], -hsize * math.sqrt(3)/2 + selectpos[1], 1)
+        glVertex(hsize/2.0 + selectpos[0], -hsize * math.sqrt(3)/2 + selectpos[1], 1)
+        glEnd()
 
         glTranslate(0.0, 0.0, 1.0)
         for x in xrange(self.size[0]):
@@ -254,7 +309,14 @@ class Game(World):
                 glColor(0.1, 0.1, 0.5, 1.0)
                 drawtext((hpos[0], hpos[1]+self.hexsize*0.2), int(self.worldstate[x][y]['military']))
                 glColor(0.3, 0.1, 0.1, 1.0)
-                drawtext(hpos, int(self.worldstate[x][y]['zombie']))
+                drawtext(hpos, str(self.worldstate[x][y]['zombie'])[:4])
+                adjhexes = adjacenthexes((x,y))
+                for n, moveorder in enumerate(self.worldstate[x][y]['milorders']):
+                    if moveorder:
+                        adjhexpos = hexpos(adjhexes[n], self.hexsize)
+                        pos = ((4*hpos[0] + 3*adjhexpos[0])/7.0, (4*hpos[1] + 3*adjhexpos[1])/7.0)
+                        drawtext(pos, 'v')
+#                        drawmoveorder(pos)
         glLoadIdentity()
         glTranslate(0.0, 0.0, 2.0)
         glDisable(GL_TEXTURE_2D)

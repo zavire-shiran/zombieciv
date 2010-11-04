@@ -26,6 +26,8 @@ def init(size, fullscreen = False):
         glEnable(GL_DEPTH_TEST)
         glDisable(GL_CULL_FACE)
 
+	glLineWidth(3)
+
         return (ratio*3, 3)
         
 def startframe():
