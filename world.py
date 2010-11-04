@@ -325,10 +325,12 @@ class Game(World):
         for x in xrange(self.size[0]):
             for y in xrange(self.size[1]):
                 hpos = hexpos((x, y), self.hexsize)
-                glColor(0.0, 0.0, 0.0, 1.0)
-                drawtext((hpos[0], hpos[1]-self.hexsize*0.2), int(self.worldstate[x][y]['hpop']))
-                glColor(0.1, 0.1, 0.5, 1.0)
-                drawtext((hpos[0], hpos[1]+self.hexsize*0.2), int(self.worldstate[x][y]['military']))
+                if int(self.worldstate[x][y]['hpop']) > 0:
+                    glColor(0.0, 0.0, 0.0, 1.0)
+                    drawtext((hpos[0], hpos[1]-self.hexsize*0.2), int(self.worldstate[x][y]['hpop']))
+                if int(self.worldstate[x][y]['military']) > 0:
+                    glColor(0.1, 0.1, 0.5, 1.0)
+                    drawtext((hpos[0], hpos[1]+self.hexsize*0.2), int(self.worldstate[x][y]['military']))
                 if self.worldstate[x][y]['zombie'] > 0:
                     glColor(0.3, 0.1, 0.1, 1.0)
                     drawtext(hpos, str(self.worldstate[x][y]['zombie'])[:4])
