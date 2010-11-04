@@ -35,7 +35,6 @@ def genhexbuffer(size, hexsize):
     indexbuffer = []
     ni = 0
     hsize = hexsize * 0.49
-    print hsize
     for x in xrange(size[0]):
         for y in xrange(size[1]):
             pos = hexpos((x, y), hexsize)
@@ -235,6 +234,8 @@ class Game(World):
             self.worldstate[self.selected[0]][self.selected[1]]['orders'] = 'breed'
         if key == pygame.K_x:
             self.worldstate[self.selected[0]][self.selected[1]]['orders'] = 'recruit'
+        if key == pygame.K_c:
+            self.worldstate[self.selected[0]][self.selected[1]]['orders'] = 'abandon'
     def keyup(self, key):
         if key == pygame.K_RIGHT:
             self.camcontrols['right'] = False
@@ -262,7 +263,9 @@ class Game(World):
         for x in xrange(self.size[0]):
             for y in xrange(self.size[1]):
                 tile = self.worldstate[x][y]
-                if tile['orders'] == 'breed':
+                if tile['orders'] in ['breed', 'abandon']:
+                    if tile['hpop'] == 0.0:
+                        tile['orders'] = 'breed'
                     if not tile['zombie'] > 1:
                         normpop = tile['hpop'] / tile['food']
                         tile['hpop'] += normpop * (1 - normpop) * dt * tile['food'] / 100
@@ -277,7 +280,10 @@ class Game(World):
                         numrecruits = min(tile['hpop'] - 200, 30 * dt)
                         tile['hpop'] -= numrecruits
                     tile['military'] += numrecruits + numbirths
-                normzombies = min(0.95, tile['zombie'] / tile['hpop'])
+                if tile['hpop'] > 0:
+                    normzombies = min(0.95, tile['zombie'] / tile['hpop'])
+                else:
+                    normzombies = 0
                 humanskilled = normzombies * (1-normzombies) * tile['hpop'] * dt * 0.2
                 tile['hpop'] -= humanskilled
                 militarykilled = 0.0
@@ -308,6 +314,11 @@ class Game(World):
                     if self.worldstate[x][y]['hpop'] - 100 > self.worldstate[adj[0]][adj[1]]['hpop'] and \
                        not self.worldstate[adj[0]][adj[1]]['zombie'] > 0:
                         nummoved = int((self.worldstate[x][y]['hpop'] - self.worldstate[adj[0]][adj[1]]['hpop']) * 0.1)
+                        self.worldstate[x][y]['hpop'] -= nummoved
+                        self.worldstate[adj[0]][adj[1]]['hpop'] += nummoved
+                    if self.worldstate[x][y]['orders'] == 'abandon' and \
+                       self.worldstate[adj[0]][adj[1]]['zombie'] == 0.0:
+                        nummoved = min(self.worldstate[x][y]['hpop'], 40 * dt)
                         self.worldstate[x][y]['hpop'] -= nummoved
                         self.worldstate[adj[0]][adj[1]]['hpop'] += nummoved
                     if not self.worldstate[x][y]['military'] and \
