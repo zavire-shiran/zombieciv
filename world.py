@@ -90,6 +90,7 @@ def drawtext(pos, text):
     glEnd()
 
 def drawmoveorder(pos):
+    glDisable(GL_TEXTURE_2D)
     glColor(0.0, 0.0, 1.0)
     glBegin(GL_TRIANGLES)
     glVertex(pos[0],      pos[1]-0.1,  3.0)
@@ -262,7 +263,7 @@ class Game(World):
             for y in xrange(self.size[1]):
                 adjhexes = adjacenthexes((x,y))
                 random.shuffle(adjhexes)
-                for adj in adjhexes:
+                for adj,milmove in zip(adjhexes, self.worldstate[x][y]['milorders']):
                     if 0 > adj[0] or adj[0] >= self.size[0] or 0 > adj[1] or adj[1] >= self.size[1]:
                         continue
                     if self.worldstate[x][y]['hpop'] - 100 > self.worldstate[adj[0]][adj[1]]['hpop'] and \
