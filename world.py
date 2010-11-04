@@ -149,8 +149,13 @@ def initworldstate(size):
     ret = [[{'hpop':400*random.random(), 'food':1000, 'military': 0, 'zombie':0,
              'milorders':[False, False, False, False, False, False]}
             for y in xrange(size[1])] for x in xrange(size[0])]
-    for y in xrange(size[1]):
-        ret[size[0]-1][y]['zombie'] = 100
+    allhexes = []
+    for x in xrange(size[0]):
+        for y in xrange(size[1]):
+            allhexes += [(x,y)]
+    random.shuffle(allhexes)
+    for x,y in allhexes[:10]:
+        ret[x][y]['zombie'] = 100
 #    ret[5][3]['zombie'] = 100
 #    ret[5][2]['zombie'] = 100
 #    ret[5][4]['zombie'] = 100
@@ -165,18 +170,18 @@ def initworldstate(size):
 #    ret[6][2]['military'] = 1000
 #    ret[6][3]['military'] = 1000
 
-    ret[5][1]['military'] = 1000
-    ret[4][1]['military'] = 1000
-    ret[3][2]['military'] = 1000
-    ret[3][3]['military'] = 1000
-    ret[3][4]['military'] = 1000
-    ret[4][4]['military'] = 1000
-    ret[5][5]['military'] = 1000
-    ret[6][1]['military'] = 1000
-    ret[7][2]['military'] = 1000
-    ret[7][3]['military'] = 1000
-    ret[7][4]['military'] = 1000
-    ret[6][4]['military'] = 1000
+#    ret[5][1]['military'] = 1000
+#    ret[4][1]['military'] = 1000
+#    ret[3][2]['military'] = 1000
+#    ret[3][3]['military'] = 1000
+#    ret[3][4]['military'] = 1000
+#    ret[4][4]['military'] = 1000
+#    ret[5][5]['military'] = 1000
+#    ret[6][1]['military'] = 1000
+#    ret[7][2]['military'] = 1000
+#    ret[7][3]['military'] = 1000
+#    ret[7][4]['military'] = 1000
+#    ret[6][4]['military'] = 1000
     return ret
 
 class Game(World):
@@ -186,7 +191,7 @@ class Game(World):
         self.size = (11, 7)
         self.worldstate = initworldstate(self.size)
         self.selected = [0,0]
-        self.speed = 1
+        self.speed = 0
         self.camera = [0.23, 0.15]
         self.camcontrols = {'left': False, 'right': False, 'up': False, 'down': False}
         self.hexbuffer = buffer(*genhexbuffer(self.size, self.hexsize))
@@ -324,8 +329,9 @@ class Game(World):
                 drawtext((hpos[0], hpos[1]-self.hexsize*0.2), int(self.worldstate[x][y]['hpop']))
                 glColor(0.1, 0.1, 0.5, 1.0)
                 drawtext((hpos[0], hpos[1]+self.hexsize*0.2), int(self.worldstate[x][y]['military']))
-                glColor(0.3, 0.1, 0.1, 1.0)
-                drawtext(hpos, str(self.worldstate[x][y]['zombie'])[:4])
+                if self.worldstate[x][y]['zombie'] > 0:
+                    glColor(0.3, 0.1, 0.1, 1.0)
+                    drawtext(hpos, str(self.worldstate[x][y]['zombie'])[:4])
                 adjhexes = adjacenthexes((x,y))
                 for n, moveorder in enumerate(self.worldstate[x][y]['milorders']):
                     if moveorder:
