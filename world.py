@@ -278,7 +278,7 @@ class Game(World):
                         tile['hpop'] -= numrecruits
                     tile['military'] += numrecruits + numbirths
                 normzombies = min(0.95, tile['zombie'] / tile['hpop'])
-                humanskilled = normzombies * (1-normzombies) * tile['hpop'] * dt * 0.1
+                humanskilled = normzombies * (1-normzombies) * tile['hpop'] * dt * 0.2
                 tile['hpop'] -= humanskilled
                 militarykilled = 0.0
                 if tile['military'] > 0.0:
