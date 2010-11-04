@@ -147,7 +147,7 @@ def adjacenthexes(pos):
 
 def initworldstate(size):
     ret = [[{'hpop':400*random.random(), 'food':1000, 'military': 0, 'zombie':0,
-             'milorders':[False, False, False, False, False, False]}
+             'orders':'breed', 'milorders':[False, False, False, False, False, False]}
             for y in xrange(size[1])] for x in xrange(size[0])]
     allhexes = []
     for x in xrange(size[0]):
@@ -275,9 +275,9 @@ class Game(World):
                     tile['zombie'] = 0.0
         for x in xrange(self.size[0]):
             for y in xrange(self.size[1]):
-                adjhexes = adjacenthexes((x,y))
-#                random.shuffle(adjhexes)
-                for n,adj,milmove in zip(range(6), adjhexes, self.worldstate[x][y]['milorders']):
+                adjhexes = zip(range(6), adjacenthexes((x,y)), self.worldstate[x][y]['milorders'])
+                random.shuffle(adjhexes)
+                for n,adj,milmove in adjhexes:
                     if 0 > adj[0] or adj[0] >= self.size[0] or 0 > adj[1] or adj[1] >= self.size[1]:
                         continue
                     if milmove:
