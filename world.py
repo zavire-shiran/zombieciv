@@ -149,25 +149,34 @@ def initworldstate(size):
     ret = [[{'hpop':400*random.random(), 'food':1000, 'military': 0, 'zombie':0,
              'milorders':[False, False, False, False, False, False]}
             for y in xrange(size[1])] for x in xrange(size[0])]
-    ret[5][3]['zombie'] = 10
+    for y in xrange(size[1]):
+        ret[size[0]-1][y]['zombie'] = 100
+#    ret[5][3]['zombie'] = 100
+#    ret[5][2]['zombie'] = 100
+#    ret[5][4]['zombie'] = 100
+#    ret[4][2]['zombie'] = 100
+#    ret[4][3]['zombie'] = 100
+#    ret[6][2]['zombie'] = 100
+#    ret[6][3]['zombie'] = 100
 #    ret[5][2]['military'] = 1000
 #    ret[5][4]['military'] = 1000
 #    ret[4][2]['military'] = 1000
 #    ret[4][3]['military'] = 1000
 #    ret[6][2]['military'] = 1000
 #    ret[6][3]['military'] = 1000
-#    ret[5][1]['military'] = 1000
-#    ret[4][1]['military'] = 1000
-#    ret[3][2]['military'] = 1000
-#    ret[3][3]['military'] = 1000
-#    ret[3][4]['military'] = 1000
-#    ret[4][4]['military'] = 1000
-#    ret[5][5]['military'] = 1000
-#    ret[6][1]['military'] = 1000
-#    ret[7][2]['military'] = 1000
-#    ret[7][3]['military'] = 1000
-#    ret[7][4]['military'] = 1000
-#    ret[6][4]['military'] = 1000
+
+    ret[5][1]['military'] = 1000
+    ret[4][1]['military'] = 1000
+    ret[3][2]['military'] = 1000
+    ret[3][3]['military'] = 1000
+    ret[3][4]['military'] = 1000
+    ret[4][4]['military'] = 1000
+    ret[5][5]['military'] = 1000
+    ret[6][1]['military'] = 1000
+    ret[7][2]['military'] = 1000
+    ret[7][3]['military'] = 1000
+    ret[7][4]['military'] = 1000
+    ret[6][4]['military'] = 1000
     return ret
 
 class Game(World):
@@ -262,10 +271,16 @@ class Game(World):
         for x in xrange(self.size[0]):
             for y in xrange(self.size[1]):
                 adjhexes = adjacenthexes((x,y))
-                random.shuffle(adjhexes)
-                for adj,milmove in zip(adjhexes, self.worldstate[x][y]['milorders']):
+#                random.shuffle(adjhexes)
+                for n,adj,milmove in zip(range(6), adjhexes, self.worldstate[x][y]['milorders']):
                     if 0 > adj[0] or adj[0] >= self.size[0] or 0 > adj[1] or adj[1] >= self.size[1]:
                         continue
+                    if milmove:
+                        milmoved = min(100 * dt, self.worldstate[x][y]['military'])
+                        self.worldstate[x][y]['military'] -= milmoved
+                        self.worldstate[adj[0]][adj[1]]['military'] += milmoved
+                        if self.worldstate[x][y]['military'] == 0.0:
+                            self.worldstate[x][y]['milorders'][n] = False
                     if self.worldstate[x][y]['hpop'] - 100 > self.worldstate[adj[0]][adj[1]]['hpop'] and \
                        not self.worldstate[adj[0]][adj[1]]['zombie'] > 0:
                         nummoved = int((self.worldstate[x][y]['hpop'] - self.worldstate[adj[0]][adj[1]]['hpop']) * 0.1)
